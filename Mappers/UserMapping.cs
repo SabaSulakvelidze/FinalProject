@@ -1,0 +1,16 @@
+﻿using AutoMapper;
+using FinalProject.Models;
+using FinalProject.Models.Requests;
+using FinalProject.Models.Responses;
+
+namespace FinalProject.Mappers
+{
+    public class UserMapping:Profile
+    {
+        public UserMapping()
+        {
+            CreateMap<UserRequest, User>();
+            CreateMap<User, UserResponse>();
+        }
+    }
+}
