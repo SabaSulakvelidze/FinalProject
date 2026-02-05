@@ -9,11 +9,8 @@ namespace Kindergarten.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(UserServices userServices) : ControllerBase
+    public class UserController(IUserServices userServices) : ControllerBase
     {
-        /*private readonly AuthService _authService = authService;
-        private readonly UserServices _userServices = userServices;*/
-
         [HttpPost("/api/SignIn")]
         public async Task<ActionResult> SignIn(LogInRequest logInRequest)
         {
@@ -23,7 +20,7 @@ namespace Kindergarten.Controllers
         }
 
         [HttpPost("/api/Register")]
-        public async Task<ActionResult<UserResponse>> Register(UserRequest userRequest)
+        public async Task<ActionResult<UserResponse>> Register(CreateUserRequest userRequest)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -42,7 +39,7 @@ namespace Kindergarten.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "RequireManagerPermission")]
+        [Authorize(Policy = "RequireAdminPermission")]
         public async Task<ActionResult<UserResponse>> GetAllUsers()
         {
             return Ok(await userServices.GetAllUsers());
@@ -50,9 +47,9 @@ namespace Kindergarten.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Policy = "RequireAdminPermission")]
-        public async Task<ActionResult<UserResponse>> UpdateUser(int id,UserRequest userRequest)
+        public async Task<ActionResult<UserResponse>> UpdateUser(int id,UpdateUserRequest request)
         {
-            return Ok(await userServices.UpdateUser(id, userRequest));
+            return Ok(await userServices.UpdateUser(id, request));
         }
 
         

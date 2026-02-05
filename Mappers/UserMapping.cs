@@ -9,7 +9,8 @@ namespace FinalProject.Mappers
     {
         public UserMapping()
         {
-            CreateMap<UserRequest, User>();
+            CreateMap<CreateUserRequest, User>();
+            CreateMap<UpdateUserRequest, User>();
             CreateMap<User, UserResponse>();
         }
     }

@@ -1,7 +1,9 @@
+using FinalProject.Exceptions;
 using FinalProject.Mappers;
 using FinalProject.Models;
 using FinalProject.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -41,12 +43,17 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddScoped<UserServices>();
+
+builder.Services.AddScoped<IUserServices,UserServices>();
+builder.Services.AddScoped<IPermissionsService, PermissionsService>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
+
 
 builder.Services.AddDbContext<AlgoUniFinalProjectDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddAutoMapper(typeof(UserMapping));
+builder.Services.AddAutoMapper(typeof(PermissionMapping));
 
 builder.Services.AddAuthentication(options =>
 {
@@ -90,5 +97,28 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseExceptionHandler(builder =>
+{
+    builder.Run(async context =>
+    {
+        var exception = context.Features
+            .Get<IExceptionHandlerFeature>()?.Error;
+
+        context.Response.ContentType = "application/json";
+
+        context.Response.StatusCode = exception switch
+        {
+            ElementNotFoundException => StatusCodes.Status404NotFound, 
+            ConflictException => StatusCodes.Status409Conflict, 
+            _ => StatusCodes.Status500InternalServerError
+        };
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = exception?.Message
+        });
+    });
+});
 
 app.Run();

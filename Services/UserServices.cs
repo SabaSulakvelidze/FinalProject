@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FinalProject.Exceptions;
 using FinalProject.Models;
 using FinalProject.Models.Requests;
 using FinalProject.Models.Responses;
@@ -10,17 +11,23 @@ using System.Text;
 
 namespace FinalProject.Services
 {
-    public class UserServices(AlgoUniFinalProjectDbContext context, IMapper mapper, IConfiguration config)
+    public class UserServices(
+        AlgoUniFinalProjectDbContext context,
+        IMapper mapper,
+        IConfiguration config,
+        IPasswordService passwordService) : IUserServices
     {
-        public async Task<UserResponse> CreateUser(UserRequest request)
+        public async Task<UserResponse> CreateUser(CreateUserRequest request)
         {
             if (request == null)
                 throw new Exception(nameof(request));
 
             if (await context.Users.AnyAsync(u => u.UserName == request.Username))
-                throw new Exception($"User with username '{request.Username}' already exists");
+                throw new ConflictException($"User with username '{request.Username}' already exists");
 
             var user = mapper.Map<User>(request);
+
+            user.Password = passwordService.Hash(request.Password);
 
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -49,9 +56,10 @@ namespace FinalProject.Services
             return mapper.Map<UserResponse>(user);
         }
 
-        public async Task<UserResponse> UpdateUser(int id, UserRequest request)
+        public async Task<UserResponse> UpdateUser(int id, UpdateUserRequest request)
         {
-            var user = await context.Users.FindAsync(id) ?? throw new Exception($"User with id {id} not found");
+            var user = await context.Users.FindAsync(id) 
+                ?? throw new ElementNotFoundException($"User with id {id} not found");
 
             mapper.Map(request, user);
 
@@ -77,8 +85,11 @@ namespace FinalProject.Services
             var user = await context.Users
                 .Include(u => u.PermissionsForUsers)
                     .ThenInclude(pfu => pfu.Permission)
-                .FirstOrDefaultAsync(u => u.UserName == logInRequest.Username && u.Password == logInRequest.Password)
+                .FirstOrDefaultAsync(u => u.UserName == logInRequest.Username)
                 ?? throw new Exception($"User with username: {logInRequest.Username} not found");
+
+            if (!passwordService.Verify(logInRequest.Password, user.Password))
+                throw new Exception("Password is incorect");
 
             var claims = new List<Claim>
             {
@@ -106,7 +117,7 @@ namespace FinalProject.Services
                     issuer: config["JwtSettings:Issuer"],
                     audience: config["JwtSettings:Audience"],
                     claims: claims,
-                    expires: DateTime.Now.AddHours(2),
+                    expires: DateTime.UtcNow.AddHours(2),
                     signingCredentials: creds
                 );
 

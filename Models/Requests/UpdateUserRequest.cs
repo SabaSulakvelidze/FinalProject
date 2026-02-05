@@ -1,9 +1,7 @@
 ﻿namespace FinalProject.Models.Requests
 {
-    public class UserRequest
+    public class UpdateUserRequest
     {
         public string Username { get; set; } = null!;
-
-        public string Password { get; set; } = null!;
     }
 }
