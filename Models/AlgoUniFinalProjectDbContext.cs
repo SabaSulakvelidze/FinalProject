@@ -19,6 +19,12 @@ public partial class AlgoUniFinalProjectDbContext : DbContext
 
     public virtual DbSet<PermissionsForUser> PermissionsForUsers { get; set; }
 
+    public virtual DbSet<Project> Projects { get; set; }
+
+    public virtual DbSet<ProjectMember> ProjectMembers { get; set; }
+
+    public virtual DbSet<ProjectTask> ProjectTasks { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -51,6 +57,60 @@ public partial class AlgoUniFinalProjectDbContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Permissio__UserI__4F7CD00D");
+        });
+
+        modelBuilder.Entity<Project>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Projects__3214EC07348ECC17");
+
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.ProjectManager).WithMany(p => p.Projects)
+                .HasForeignKey(d => d.ProjectManagerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Projects__Projec__5CD6CB2B");
+        });
+
+        modelBuilder.Entity<ProjectMember>(entity =>
+        {
+            entity.HasKey(e => new { e.ProjectId, e.MemberId }).HasName("PK__ProjectM__E6D5BA41C2ADC609");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+
+            entity.HasOne(d => d.Member).WithMany(p => p.ProjectMembers)
+                .HasForeignKey(d => d.MemberId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProjectMe__Membe__619B8048");
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectMembers)
+                .HasForeignKey(d => d.ProjectId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProjectMe__Proje__60A75C0F");
+        });
+
+        modelBuilder.Entity<ProjectTask>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__ProjectT__3214EC073935B372");
+
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.DeadLine).HasColumnType("datetime");
+            entity.Property(e => e.TaskName).HasMaxLength(100);
+            entity.Property(e => e.TaskStatus).HasMaxLength(50);
+
+            entity.HasOne(d => d.Project).WithMany(p => p.ProjectTasks)
+                .HasForeignKey(d => d.ProjectId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProjectTa__Proje__6FE99F9F");
+
+            entity.HasOne(d => d.TaskAssignee).WithMany(p => p.ProjectTaskTaskAssignees)
+                .HasForeignKey(d => d.TaskAssigneeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProjectTa__TaskA__71D1E811");
+
+            entity.HasOne(d => d.TaskIssuer).WithMany(p => p.ProjectTaskTaskIssuers)
+                .HasForeignKey(d => d.TaskIssuerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ProjectTa__TaskI__70DDC3D8");
         });
 
         modelBuilder.Entity<User>(entity =>

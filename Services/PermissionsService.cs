@@ -23,10 +23,9 @@ namespace FinalProject.Services
                 ?? throw new ElementNotFoundException($"Permission with id {permissionId} was not found");
 
             var permForUser = await context.PermissionsForUsers
-                .FirstOrDefaultAsync(pfu => pfu.UserId == userId && pfu.PermissionId == permissionId);
-            if(permForUser!= null) 
-                throw new ConflictException($"User with id {userId} is already assigned permission with id {permissionId}");
-            
+                .FirstOrDefaultAsync(pfu => pfu.UserId == userId && pfu.PermissionId == permissionId)
+                ?? throw new ConflictException($"User with id {userId} is already assigned permission with id {permissionId}");
+         
             await context.PermissionsForUsers
                 .AddAsync(new PermissionsForUser() { PermissionId = permissionId, UserId = userId });
             await context.SaveChangesAsync();

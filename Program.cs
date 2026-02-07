@@ -1,4 +1,4 @@
-using FinalProject.Exceptions;
+﻿using FinalProject.Exceptions;
 using FinalProject.Mappers;
 using FinalProject.Models;
 using FinalProject.Services;
@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using FinalProject.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddScoped<IUserServices,UserServices>();
 builder.Services.AddScoped<IPermissionsService, PermissionsService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IProjectService, ProjectService>();
 
 
 builder.Services.AddDbContext<AlgoUniFinalProjectDbContext>(options =>
@@ -54,6 +56,8 @@ builder.Services.AddDbContext<AlgoUniFinalProjectDbContext>(options =>
 
 builder.Services.AddAutoMapper(typeof(UserMapping));
 builder.Services.AddAutoMapper(typeof(PermissionMapping));
+builder.Services.AddAutoMapper(typeof(ProjectMapping));
+builder.Services.AddAutoMapper(typeof(ProjectTaskMapping));
 
 builder.Services.AddAuthentication(options =>
 {
