@@ -28,7 +28,8 @@ namespace Kindergarten.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = "RequireAdminPermission")]
+        [Authorize]
+        //[Authorize(Policy = "RequireAdminPermission")]
         public async Task<ActionResult<UserResponse>> GetUserById(int id)
         {
             var result = await userServices.GetUserById(id);
@@ -39,25 +40,32 @@ namespace Kindergarten.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "RequireAdminPermission")]
+        [Authorize]
+        //[Authorize(Policy = "RequireAdminPermission")]
         public async Task<ActionResult<UserResponse>> GetAllUsers()
         {
             return Ok(await userServices.GetAllUsers());
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy = "RequireAdminPermission")]
+        [Authorize]
+        //[Authorize(Policy = "RequireAdminPermission")]
         public async Task<ActionResult<UserResponse>> UpdateUser(int id,UpdateUserRequest request)
         {
+            var permissions = User.Claims.Where(i => i.Type == "Permission").Select(i => i.Value).ToList();
+            if (!permissions.Contains("ADMIN")) return Forbid();
             return Ok(await userServices.UpdateUser(id, request));
         }
 
         
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = "RequireAdminPermission")]
+        [Authorize]
+        //[Authorize(Policy = "RequireAdminPermission")]
         public async Task<ActionResult<UserResponse>> DeleteUser(int id)
         {
+            var permissions = User.Claims.Where(i => i.Type == "Permission").Select(i => i.Value).ToList();
+            if (!permissions.Contains("ADMIN")) return Forbid();
             await userServices.DeleteUser(id);
             return Ok();
         }

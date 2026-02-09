@@ -3,7 +3,7 @@ using FinalProject.Models.Responses;
 
 namespace FinalProject.Services
 {
-    public interface IPermissionsService
+    public interface IPermissionService
     {
         Task<PermissionResponse> CreatePermission(PermissionRequest request);
         Task<List<PermissionResponse>> GetAllPermissions();

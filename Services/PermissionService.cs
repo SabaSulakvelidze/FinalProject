@@ -9,23 +9,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinalProject.Services
 {
-    public class PermissionsService(
+    public class PermissionService(
         AlgoUniFinalProjectDbContext context,
         IMapper mapper
-        ) : IPermissionsService
+        ) : IPermissionService
     {
         public async Task AssignPermissionToUser(int userId, int permissionId)
         {
-            var user = await context.Users.FindAsync(userId) 
+            var user = await context.Users.FindAsync(userId)
                 ?? throw new ElementNotFoundException($"User with id {userId} was not found");
 
             var permission = await context.Permissions.FindAsync(permissionId)
                 ?? throw new ElementNotFoundException($"Permission with id {permissionId} was not found");
 
-            var permForUser = await context.PermissionsForUsers
-                .FirstOrDefaultAsync(pfu => pfu.UserId == userId && pfu.PermissionId == permissionId)
-                ?? throw new ConflictException($"User with id {userId} is already assigned permission with id {permissionId}");
-         
+            var exists = await context.PermissionsForUsers
+                .AnyAsync(pfu => pfu.UserId == userId && pfu.PermissionId == permissionId);
+
+            if (exists) throw new ConflictException($"User with id {userId} is already assigned permission with id {permissionId}");
+
             await context.PermissionsForUsers
                 .AddAsync(new PermissionsForUser() { PermissionId = permissionId, UserId = userId });
             await context.SaveChangesAsync();
@@ -66,14 +67,12 @@ namespace FinalProject.Services
                 .FirstOrDefaultAsync(u => u.Id == id)
                 ?? throw new ElementNotFoundException($"Permission with id {id} was not found");
 
-            if (permission.PermissionsForUsers.Any()) {
-                var userIds = permission.PermissionsForUsers
-                        .Select(pfu => pfu.UserId);
-                throw new ConflictException(
-                    $"This permission is curently assigned to users with ids: {string.Join(", ", userIds)}"
-                    );
+            if (permission.PermissionsForUsers.Count != 0)
+            {
+                var userIds = permission.PermissionsForUsers.Select(pfu => pfu.UserId);
+                throw new ConflictException($"This permission is curently assigned to users with ids: {string.Join(", ", userIds)}");
             }
-                
+
 
             context.Permissions.Remove(permission);
 

@@ -42,7 +42,7 @@ namespace FinalProject.Services
                 .Include(u => u.PermissionsForUsers)
                     .ThenInclude(pfu => pfu.Permission)
                 .ToListAsync();
-
+        
             return mapper.Map<List<UserResponse>>(users);
         }
 

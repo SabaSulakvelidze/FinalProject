@@ -11,7 +11,15 @@ namespace FinalProject.Mappers
         {
             CreateMap<CreateUserRequest, User>();
             CreateMap<UpdateUserRequest, User>();
-            CreateMap<User, UserResponse>();
+            CreateMap<User, UserResponse>()
+                .ForMember(
+                    dest => dest.PermissionNames,
+                    opt => opt.MapFrom(
+                            src => src.PermissionsForUsers
+                            .Select(pfu => pfu.Permission.PermissionName)
+                            .ToList()
+                        )
+                );
         }
     }
 }

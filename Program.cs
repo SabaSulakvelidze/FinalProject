@@ -45,10 +45,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
-builder.Services.AddScoped<IUserServices,UserServices>();
-builder.Services.AddScoped<IPermissionsService, PermissionsService>();
+builder.Services.AddScoped<IUserServices, UserServices>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IProjectTaskService, ProjectTaskService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 
 builder.Services.AddDbContext<AlgoUniFinalProjectDbContext>(options =>
@@ -79,10 +81,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorizationBuilder()
+builder.Services.AddAuthorization();
+/*builder.Services.AddAuthorizationBuilder()
     .AddPolicy("RequireAdminPermission", policy => policy.RequireClaim("Permission", "ADMIN"))
     .AddPolicy("RequireManagerPermission", policy => policy.RequireClaim("Permission", "MANAGER"))
-    .AddPolicy("RequireEmployeePermission", policy => policy.RequireClaim("Permission", "EMPLOYEE"));
+    .AddPolicy("RequireEmployeePermission", policy => policy.RequireClaim("Permission", "EMPLOYEE"));*/
 
 
 var app = builder.Build();
@@ -113,8 +116,8 @@ app.UseExceptionHandler(builder =>
 
         context.Response.StatusCode = exception switch
         {
-            ElementNotFoundException => StatusCodes.Status404NotFound, 
-            ConflictException => StatusCodes.Status409Conflict, 
+            ElementNotFoundException => StatusCodes.Status404NotFound,
+            ConflictException => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status500InternalServerError
         };
 

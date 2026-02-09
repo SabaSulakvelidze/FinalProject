@@ -16,6 +16,7 @@ namespace FinalProject.Services
         public async Task<ProjectResponse> CreateProject(CreateProjectRequest request)
         {
             var project = mapper.Map<Project>(request);
+            project.CreatedAt = DateTime.UtcNow;
 
             context.Projects.Add(project);
 
@@ -29,7 +30,10 @@ namespace FinalProject.Services
             var project = await context.Projects.FindAsync(id)
                  ?? throw new ElementNotFoundException($"Project with id {id} was not found");
 
-            var memberIds = await context.ProjectMembers.Select(p => p.ProjectId == id).ToListAsync();
+            var memberIds = await context.ProjectMembers
+                .Where(p => p.ProjectId == id)
+                .Select(p=>p.MemberId)
+                .ToListAsync();
 
             if (memberIds.Count != 0)
                 throw new ConflictException($"Project with id {id} has members: {string.Join(", ", memberIds)}");
@@ -53,13 +57,14 @@ namespace FinalProject.Services
 
         public async Task<List<UserResponse>> GetProjectMembers(int projectId)
         {
+            var projectExists = await context.Projects.AnyAsync(p => p.Id == projectId);
+            if (!projectExists)
+                throw new ElementNotFoundException($"Project with id {projectId} was not found");
+
             var projectMembers = await context.ProjectMembers
                 .Where(pm => pm.ProjectId == projectId)
                 .Select(pm => pm.Member)
                 .ToListAsync();
-
-            if (projectMembers.Count == 0)
-                throw new ElementNotFoundException($"Project with id {projectId} was not found");
 
             return mapper.Map<List<UserResponse>>(projectMembers);
         }
@@ -77,8 +82,9 @@ namespace FinalProject.Services
 
         public async Task<List<UserResponse>> AddMembersToProject(int projectId, List<int> ids)
         {
-            var project = await context.Projects.FindAsync(projectId)
-                ?? throw new ElementNotFoundException($"Project with id {projectId} was not found");
+            var projectExists = await context.Projects.AnyAsync(p => p.Id == projectId);
+            if (!projectExists)
+                throw new ElementNotFoundException($"Project with id {projectId} was not found");
 
             var existingUsers = await context.Users
                 .Where(u => ids.Contains(u.Id))
@@ -87,7 +93,7 @@ namespace FinalProject.Services
 
             var missingIds = ids.Except(existingUsers).ToList();
             if (missingIds.Count != 0)
-                throw new ElementNotFoundException($"Users with ids: {string.Join(", ",missingIds)} was not found");
+                throw new ElementNotFoundException($"Users with ids: {string.Join(", ",missingIds)} were not found");
             
             var projectMembersIds = await context.ProjectMembers
                 .Where(pm => ids.Contains(pm.MemberId))
@@ -107,6 +113,8 @@ namespace FinalProject.Services
             var members = await context.ProjectMembers
                 .Where(pm => pm.ProjectId == projectId)
                 .Include(pm=>pm.Member)
+                    .ThenInclude(m=>m.PermissionsForUsers)
+                        .ThenInclude(pfu => pfu.Permission)
                 .Select(pm=>pm.Member)
                 .ToListAsync();
             return mapper.Map<List<UserResponse>>(members);
@@ -114,8 +122,9 @@ namespace FinalProject.Services
 
         public async Task RemoveMembersFromProject(int projectId, List<int> ids)
         {
-            var project = await context.Projects.FindAsync(projectId)
-                ?? throw new ElementNotFoundException($"Project with id {projectId} was not found");
+            var projectExists = await context.Projects.AnyAsync(p => p.Id == projectId);
+            if (!projectExists)
+                throw new ElementNotFoundException($"Project with id {projectId} was not found");
 
             var existingUsers = await context.Users
                 .Where(u => ids.Contains(u.Id))
@@ -126,23 +135,15 @@ namespace FinalProject.Services
             if (missingIds.Count != 0)
                 throw new ElementNotFoundException($"Users with ids: {string.Join(", ", missingIds)} was not found");
 
-            var projectMembersIds = await context.ProjectMembers
-                .Where(pm => !ids.Contains(pm.MemberId))
-                .Select(pm => pm.MemberId)
-                .ToListAsync();
-
-            if (projectMembersIds.Count != 0)
-                throw new ConflictException(
-                    $"These users are not members of any project, or members of other projects. User ids: {string.Join(", ", projectMembersIds)}");
-
             var projectMembers = await context.ProjectMembers
-                .Where(pm=>pm.ProjectId == projectId && ids.Contains(pm.MemberId))
+                .Where(pm => pm.ProjectId == projectId && ids.Contains(pm.MemberId))
                 .ToListAsync();
 
-            foreach (var item in projectMembers)
-            {
-                context.ProjectMembers.Remove(item);
-            }
+            if (projectMembers.Count == 0)
+                throw new ElementNotFoundException(
+                    $"None of the specified users are members of project {projectId}");
+
+            context.ProjectMembers.RemoveRange(projectMembers);
             await context.SaveChangesAsync();
 
         }
