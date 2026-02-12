@@ -80,8 +80,8 @@ namespace FinalProject.Controllers
             if (!permissions.Contains("ADMIN"))
                 return Forbid();
 
-            var result = await permissionService.GetPermissionById(id);
-            if (result == null) return NotFound($"Permission with id {id} not found");
+            /*var result = await permissionService.GetPermissionById(id);
+            if (result == null) return NotFound($"Permission with id {id} not found");*/
             await permissionService.DeletePermission(id);
             return Ok($"Permission with id {id} was deleted!");
         }

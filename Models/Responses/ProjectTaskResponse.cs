@@ -14,10 +14,10 @@
 
         public DateTime DeadLine { get; set; }
 
-        public ProjectResponse Project { get; set; } = null!;
+        public ProjectResponse Project { get; set; } = new();
 
-        public UserResponse TaskAssignee { get; set; } = null!;
+        public UserResponse TaskAssignee { get; set; } = new();
 
-        public UserResponse TaskIssuer { get; set; } = null!;
+        public UserResponse TaskIssuer { get; set; } = new();
     }
 }

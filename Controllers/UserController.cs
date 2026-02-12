@@ -1,4 +1,5 @@
-﻿using FinalProject.Models;
+﻿using Azure.Core;
+using FinalProject.Models;
 using FinalProject.Models.Requests;
 using FinalProject.Models.Responses;
 using FinalProject.Services;
@@ -20,11 +21,13 @@ namespace Kindergarten.Controllers
         }
 
         [HttpPost("/api/Register")]
-        public async Task<ActionResult<UserResponse>> Register(CreateUserRequest userRequest)
+        public async Task<ActionResult<UserResponse>> Register(CreateUserRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (request == null)
+                return BadRequest(request);
 
-            return Ok(await userServices.CreateUser(userRequest));
+            return Ok(await userServices.CreateUser(request));
         }
 
         [HttpGet("{id}")]
@@ -32,11 +35,7 @@ namespace Kindergarten.Controllers
         //[Authorize(Policy = "RequireAdminPermission")]
         public async Task<ActionResult<UserResponse>> GetUserById(int id)
         {
-            var result = await userServices.GetUserById(id);
-
-            if (result == null) return BadRequest($"User with id {id} not found"); 
-
-            return Ok(result);
+            return Ok(await userServices.GetUserById(id));
         }
 
         [HttpGet]
@@ -54,6 +53,10 @@ namespace Kindergarten.Controllers
         {
             var permissions = User.Claims.Where(i => i.Type == "Permission").Select(i => i.Value).ToList();
             if (!permissions.Contains("ADMIN")) return Forbid();
+
+            if (request == null)
+                return BadRequest(request);
+
             return Ok(await userServices.UpdateUser(id, request));
         }
 
@@ -66,6 +69,7 @@ namespace Kindergarten.Controllers
         {
             var permissions = User.Claims.Where(i => i.Type == "Permission").Select(i => i.Value).ToList();
             if (!permissions.Contains("ADMIN")) return Forbid();
+
             await userServices.DeleteUser(id);
             return Ok();
         }

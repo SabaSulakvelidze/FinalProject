@@ -44,7 +44,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserServices, UserServices>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();

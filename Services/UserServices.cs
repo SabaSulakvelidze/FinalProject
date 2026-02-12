@@ -51,7 +51,8 @@ namespace FinalProject.Services
             var user = await context.Users
                 .Include(u => u.PermissionsForUsers)
                     .ThenInclude(pfu => pfu.Permission)
-                .FirstOrDefaultAsync(u => u.Id == id) ?? null;
+                .FirstOrDefaultAsync(u => u.Id == id) 
+                ?? throw new ElementNotFoundException($"User with id {id} not found");
 
             return mapper.Map<UserResponse>(user);
         }
@@ -94,7 +95,7 @@ namespace FinalProject.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, logInRequest.Username),
-                new Claim("UserID",user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, logInRequest.Username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };

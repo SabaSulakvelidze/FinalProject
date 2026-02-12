@@ -74,6 +74,9 @@ namespace FinalProject.Services
             var project = await context.Projects.FindAsync(id)
                 ?? throw new ElementNotFoundException($"Project with id {id} was not found");
 
+            if (await context.Projects.AnyAsync(p => p.ProjectName == request.ProjectName))
+                throw new  ConflictException($"Project with name '{request.ProjectName}' already exists");
+
             mapper.Map(request, project);
 
             await context.SaveChangesAsync();
@@ -82,8 +85,7 @@ namespace FinalProject.Services
 
         public async Task<List<UserResponse>> AddMembersToProject(int projectId, List<int> ids)
         {
-            var projectExists = await context.Projects.AnyAsync(p => p.Id == projectId);
-            if (!projectExists)
+            if (!await context.Projects.AnyAsync(p => p.Id == projectId))
                 throw new ElementNotFoundException($"Project with id {projectId} was not found");
 
             var existingUsers = await context.Users
@@ -122,8 +124,7 @@ namespace FinalProject.Services
 
         public async Task RemoveMembersFromProject(int projectId, List<int> ids)
         {
-            var projectExists = await context.Projects.AnyAsync(p => p.Id == projectId);
-            if (!projectExists)
+            if (!await context.Projects.AnyAsync(p => p.Id == projectId))
                 throw new ElementNotFoundException($"Project with id {projectId} was not found");
 
             var existingUsers = await context.Users

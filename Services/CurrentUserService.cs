@@ -2,12 +2,14 @@
 
 namespace FinalProject.Services
 {
-    public class CurrentUserService : ICurrentUserService
+    public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICurrentUserService
     {
+       
         public int UserId =>
-         int.Parse(
-             new HttpContextAccessor().HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
-             ?? throw new UnauthorizedAccessException()
-         );
+            int.Parse(
+                httpContextAccessor.HttpContext?.User
+                    .FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? throw new UnauthorizedAccessException("UserId claim missing")
+            );
     }
 }

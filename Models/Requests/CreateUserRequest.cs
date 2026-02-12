@@ -9,7 +9,7 @@ namespace FinalProject.Models.Requests
         [RegularExpression(@"^[a-zA-Z0-9._-]+$", ErrorMessage = "მომხმარებლის სახელი შეიცავს დაუშვებელ სიმბოლოებს")]
         public string Username { get; set; } = null!;
         [Required(ErrorMessage = "პაროლი სავალდებულოა")]
-        [StringLength(128, MinimumLength = 8, ErrorMessage = "პაროლი უნდა იყოს მინიმუმ 8 სიმბოლო")]
+        [StringLength(128, MinimumLength = 6, ErrorMessage = "პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო")]
         public string Password { get; set; } = null!;
     }
 }

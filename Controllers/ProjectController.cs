@@ -36,9 +36,7 @@ namespace FinalProject.Controllers
         [Authorize]
         public async Task<ActionResult<ProjectResponse>> GetProjectById(int id)
         {
-            var result = await service.GetProjectById(id);
-            if (result == null) return NotFound($"Project with id {id} not found");
-            return Ok(result);
+            return Ok(await service.GetProjectById(id));
         }
 
         [HttpPut("{id}")]
@@ -49,12 +47,9 @@ namespace FinalProject.Controllers
             if (!(permissions.Contains("ADMIN") || permissions.Contains("MANAGER")))
                 return Forbid();
 
-            if (await service.GetProjectById(id) == null)
-                return BadRequest($"Project with id {id} not found");
+            if (request == null)
+                return BadRequest(request);
 
-            var result = await service.GetAllProjects();
-            if (result.Any(p => p.ProjectName == request.ProjectName))
-                return Conflict($"Project with name '{request.ProjectName}' already exists");
             return Ok(await service.UpdateProject(id, request));
         }
 
@@ -65,9 +60,7 @@ namespace FinalProject.Controllers
             var permissions = User.Claims.Where(i => i.Type == "Permission").Select(i => i.Value).ToList();
             if (!(permissions.Contains("ADMIN") || permissions.Contains("MANAGER")))
                 return Forbid();
-
-            var result = await service.GetProjectById(id);
-            if (result == null) return NotFound($"Project with id {id} not found");
+          
             await service.DeleteProject(id);
             return Ok($"Permission with id {id} was deleted!");
         }
@@ -76,8 +69,6 @@ namespace FinalProject.Controllers
         [Authorize]
         public async Task<ActionResult<List<UserResponse>>> GetProjectMembers(int projectId)
         {
-            var result = await service.GetProjectById(projectId);
-            if (result == null) return NotFound($"Project with id {projectId} not found");
             return Ok(await service.GetProjectMembers(projectId));
         }
 
@@ -89,8 +80,6 @@ namespace FinalProject.Controllers
             if (!(permissions.Contains("ADMIN") || permissions.Contains("MANAGER")))
                 return Forbid();
 
-            var result = await service.GetProjectById(projectId);
-            if (result == null) return NotFound($"Project with id {projectId} not found");
             return Ok(await service.AddMembersToProject(projectId, ids));
         }
 
@@ -102,8 +91,6 @@ namespace FinalProject.Controllers
             if (!(permissions.Contains("ADMIN") || permissions.Contains("MANAGER")))
                 return Forbid();
 
-            var result = await service.GetProjectById(projectId);
-            if (result == null) return NotFound($"Project with id {projectId} not found");
             await service.RemoveMembersFromProject(projectId, ids);
             return Ok($"Users with ids: {string.Join(", ",ids)}, has been removed form Project with id {projectId}");
         }

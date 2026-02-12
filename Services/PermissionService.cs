@@ -16,6 +16,7 @@ namespace FinalProject.Services
     {
         public async Task AssignPermissionToUser(int userId, int permissionId)
         {
+            
             var user = await context.Users.FindAsync(userId)
                 ?? throw new ElementNotFoundException($"User with id {userId} was not found");
 
