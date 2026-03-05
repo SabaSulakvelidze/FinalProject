@@ -7,6 +7,8 @@ namespace FinalProject.Services
     {
         Task<List<ProjectTaskResponse>> GetTasksByProject(int projectId);
 
+        Task<List<ProjectTaskResponse>> GetMyProjcetTasks();
+
         Task<ProjectTaskResponse> GetProjectTaskById(int id);
 
         Task<ProjectTaskResponse> CreateProjectTask(CreateProjectTaskRequest request);

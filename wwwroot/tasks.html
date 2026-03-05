@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>My Tasks</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 24px;
+            max-width: 1100px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin: 12px 0 18px;
+        }
+
+        input {
+            padding: 10px;
+            width: 720px;
+            max-width: 100%;
+        }
+
+        button {
+            padding: 10px 14px;
+            cursor: pointer;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border: 1px solid #999;
+            border-radius: 999px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .task {
+            border: 1px solid #e3e3e3;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .meta {
+            font-size: 12px;
+            opacity: 0.75;
+            margin-top: 6px;
+        }
+
+        .muted {
+            opacity: 0.8;
+            font-size: 13px;
+        }
+
+        .notif {
+            border: 1px solid #e3e3e3;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        #toastContainer {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 340px;
+            z-index: 9999;
+        }
+
+        .toast {
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            background: white;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        .toastTitle {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .toastSmall {
+            font-size: 12px;
+            opacity: 0.75;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>
+        My Tasks
+        <span id="connStatus" class="badge">disconnected</span>
+    </h2>
+
+    <div class="muted">
+        Paste your JWT (without <b>Bearer</b>) then click <b>Load + Connect</b>.
+    </div>
+
+    <div class="row">
+        <input id="jwt" placeholder="JWT token (no 'Bearer ' prefix)" />
+        <button id="connectBtn">Load + Connect</button>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3 style="margin-top:0;">Notifications</h3>
+            <div class="muted">Incoming task events will appear here.</div>
+            <div id="notifications"></div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0;">My Tasks</h3>
+            <div class="muted">This list updates automatically when SignalR pushes a change.</div>
+            <div id="tasks"></div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <!-- SignalR JS client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script src="tasks.js"></script>
+</body>
+</html>

@@ -9,13 +9,20 @@ namespace FinalProject.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProjcetTaskController(IProjectTaskService service) : ControllerBase
+    public class ProjectTasksController(IProjectTaskService service) : ControllerBase
     {
         [HttpGet("~/api/GetTasksByProject/{projectId}")]
         [Authorize]
         public async Task<ActionResult<List<ProjectTaskResponse>>> GetTasksByProject(int projectId)
         {
             return Ok(await service.GetTasksByProject(projectId));
+        }
+
+        [HttpGet("my")]
+        [Authorize]
+        public async Task<ActionResult<List<ProjectTaskResponse>>> GetMyProjcetTasks()
+        {
+            return Ok(await service.GetMyProjcetTasks());
         }
 
         [HttpPost]

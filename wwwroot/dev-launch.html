@@ -1,0 +1,53 @@
+﻿<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Dev Launcher</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+        }
+
+        code {
+            background: #f3f3f3;
+            padding: 2px 6px;
+        }
+
+        .ok {
+            color: green;
+        }
+
+        .bad {
+            color: crimson;
+        }
+    </style>
+</head>
+<body>
+    <h2>Dev Launcher</h2>
+    <p>If tabs don’t open, popups are blocked. Allow popups for <code>https://localhost:7163</code> and refresh.</p>
+    <ul id="status"></ul>
+
+    <script>
+        const links = [
+            "/swagger/index.html",
+            "/tasks.html"
+        ];
+
+        const ul = document.getElementById("status");
+
+        function addLine(text, ok) {
+            const li = document.createElement("li");
+            li.className = ok ? "ok" : "bad";
+            li.textContent = text;
+            ul.appendChild(li);
+        }
+
+        for (const url of links) {
+            const w = window.open(url, "_blank");
+            addLine(`open(${url}) -> ` + (w ? "opened" : "BLOCKED"), !!w);
+        }
+    </script>
+</body>
+</html>
